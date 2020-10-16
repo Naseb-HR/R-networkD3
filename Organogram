@@ -1,0 +1,51 @@
+library(collapsibleTree)
+library(htmlwidgets)
+
+# Create a simple org chart
+org <- data.frame(
+  Manager = c(
+    NA, "Ana", "Ana", "Bill", "Bill", "Bill", "Claudette", "Claudette", "Danny",
+    "Fred", "Fred", "Grace", "Larry", "Larry", "Nicholas", "Nicholas"
+  ),
+  Employee = c(
+    "Ana", "Bill", "Larry", "Claudette", "Danny", "Erika", "Fred", "Grace",
+    "Henri", "Ida", "Joaquin", "Kate", "Mindy", "Nicholas", "Odette", "Peter"
+  ),
+  Title = c(
+    "President", "VP Operations", "VP Finance", "Director", "Director", "Scientist",
+    "Manager", "Manager", "Jr Scientist", "Operator", "Operator", "Associate",
+    "Analyst", "Director", "Accountant", "Accountant"
+  )
+)
+
+# Add in colors and sizesbh
+org$Color <- org$Title
+levels(org$Color) <- colorspace::rainbow_hcl(11)
+
+# Use unsplash api to add in random photos to tooltip
+org$tooltip <- paste0(
+  org$Employee,
+  "<br>Title: ",
+  org$Title,
+  "<br><img src='https://source.unsplash.com/collection/385548/150x100'>"
+)
+
+network <- collapsibleTreeNetwork(
+  org,
+  attribute = "Title",
+  fill = "Color",
+  nodeSize = "leafCount",
+  tooltipHtml = "tooltip"
+)
+
+network <- htmlwidgets::onRender(
+  network,
+  'function(el, x) { 
+    d3.selectAll(".legend text").style("fill", "green");
+    d3.select("body").style("background-color", "#144370");
+    d3.select("h1").style("color", "black").style("font-family", "sans-serif");
+  }'
+)
+
+network <- htmlwidgets::prependContent(network, htmltools::tags$h1("Organization Chart of ABC"))
+network
